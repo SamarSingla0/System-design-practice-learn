@@ -52,16 +52,31 @@ public:
     }
 };
 
-class ShoppingCartStorage {
-private:
+class Persistence {
+private: 
     ShoppingCart* cart;
 public:
-    ShoppingCartStorage(ShoppingCart* cart) {
-        this->cart = cart;
-    }
+    virtual void save(ShoppingCart* cart) = 0;
+};
 
-    void saveToDatabase() {
+class SQLPersistence : public Persistence {
+public:
+    void save(ShoppingCart* cart) override {
         cout << "Saving shopping cart to sql" << endl;
+    }
+};
+
+class MongoPersistence : public Persistence {
+public:    
+    void save(ShoppingCart* cart) override {
+        cout << "Saving shopping cart to mongo" << endl;
+    }
+};
+
+class FilePeristence : public Persistence {
+public:
+    void save(ShoppingCart* cart) override {
+        cout << "Saving shopping cart to file" << endl;
     }
 };
 
@@ -71,8 +86,16 @@ int main() {
     cart->addProduct(new Product("Laptop", 999.99));
     cart->addProduct(new Product("Mouse", 49.99));
 
-    ShoppingCartPrinter* db = new ShoppingCartPrinter(cart);
-    db->printInvoice();
+    ShoppingCartPrinter* printer = new ShoppingCartPrinter(cart);
+    printer->printInvoice();
+
+    Persistence* db = new SQLPersistence();
+    Persistence* mongo = new MongoPersistence();
+    Persistence* file = new FilePeristence();
+
+    db->save(cart);
+    mongo->save(cart); 
+    file->save(cart);
 
     return 0;
 }
